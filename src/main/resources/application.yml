@@ -1,1 +1,19 @@
+server:
+  port: 8080
+
+app-config:
+  url:
+    api: "http://challenge-api.luizalabs.com/api/"
+  jwt:
+    secret: mysecretkeyforencriptjwtwithhash256afterdecryptfromdb
+    expiration: 28800
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/customer_service?authSource=admin
+
+
+
+
 
