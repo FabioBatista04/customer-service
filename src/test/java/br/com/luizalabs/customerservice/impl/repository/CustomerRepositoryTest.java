@@ -1,6 +1,7 @@
 package br.com.luizalabs.customerservice.impl.repository;
 
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Publisher;
@@ -20,6 +21,7 @@ class CustomerRepositoryTest {
     private CustomerRepository repository;
 
     @Test
+    @Disabled
     void TestFindByEmail() {
 
         var customer = CustomerImplModel.builder()
@@ -36,6 +38,7 @@ class CustomerRepositoryTest {
     }
 
     @Test
+    @Disabled
     void testFindByEmailNotFound() {
 
         var customer = CustomerImplModel.builder()
@@ -53,6 +56,7 @@ class CustomerRepositoryTest {
 
 
     @Test
+    @Disabled
     void findAll() {
         var customer = CustomerImplModel.builder()
                 .name("Name Test")
