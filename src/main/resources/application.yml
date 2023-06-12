@@ -6,7 +6,7 @@ app-config:
     api: "http://challenge-api.luizalabs.com/api/"
   jwt:
     secret: mysecretkeyforencriptjwtwithhash256afterdecryptfromdb
-    expiration: 28800
+    expiration: 28800 #8horas
 
 spring:
   data:
