@@ -3,7 +3,7 @@ FROM openjdk:17-oracle
 WORKDIR /app
 
 
-COPY build/libs/customer-service-0.0.1-SNAPSHOT.jar customer-service.jar
+COPY build/libs/customer-service-1.0.jar customer-service.jar
 
 EXPOSE 8080
 
