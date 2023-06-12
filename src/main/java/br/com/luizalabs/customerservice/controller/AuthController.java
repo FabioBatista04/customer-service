@@ -24,7 +24,6 @@ public class AuthController {
     @PostMapping("/login")
     @ResponseStatus(CREATED)
     public Mono<AuthControllerResponse> login(@Valid @RequestBody UserControllerRequest request) {
-        log.info("aaa");
         return  facade.generateToken(request);
 
     }

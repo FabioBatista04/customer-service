@@ -42,10 +42,7 @@ public class AuthImpl {
     }
     public Mono<String> generateToken(UserImplModel userImplaModel) {
         return userRepository.findByUsername(userImplaModel.getUsername())
-                .filter(userDetail -> {
-                    log.info("pass -> {}", userDetail.getPassword());
-                    return encoder.matches(userImplaModel.getPassword(), userDetail.getPassword());
-                })
+                .filter(userDetail -> encoder.matches(userImplaModel.getPassword(), userDetail.getPassword()))
                 .map(jwtUtil::generateToken)
                 .switchIfEmpty(Mono.error(new UnauthorizedException()));
     }

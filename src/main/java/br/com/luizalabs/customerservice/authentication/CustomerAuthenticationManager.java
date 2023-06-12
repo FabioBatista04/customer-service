@@ -30,7 +30,6 @@ public class CustomerAuthenticationManager implements ReactiveAuthenticationMana
                 .switchIfEmpty(Mono.empty())
                 .map(valid -> {
                     Claims claims = jwtUtil.getAllClaimsFromToken(authToken);
-                    log.info("role : {}", claims.get("role", List.class));
                     List<String> rolesMap = claims.get("role", List.class);
                     return new UsernamePasswordAuthenticationToken(
                             username,
