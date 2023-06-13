@@ -4,6 +4,7 @@ import br.com.luizalabs.customerservice.controller.model.request.CustomerControl
 import br.com.luizalabs.customerservice.controller.model.response.CustomerControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @Log4j2
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RequestMapping(value = "/customers")
 public class CustomerController {
 
@@ -24,7 +25,6 @@ public class CustomerController {
     @PostMapping
     @ResponseStatus(CREATED)
     public Mono<CustomerControllerResponse> create(@Valid @RequestBody CustomerControllerRequest client) {
-        //TODO incluir validação de requisição com nginx para obter o ip e proxy
         return controllerFacade.createCustomer(client);
     }
 
