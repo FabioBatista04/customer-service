@@ -69,7 +69,7 @@ public class ControllerFacade {
         return authImpl.generateToken(AuthControllerMapper.mapperToUserImplModel(request)).map(AuthControllerResponse::new);
     }
 
-    public Mono<ProductPageControllerResponse> findProductsByPage(int page) {
+    public Mono<ProductPageControllerResponse> findProductsByPage(String page) {
         return productImpl.getProductsByPage(page).map(ProductControllerMapper::mapperToProductPageImpl);
     }
 }
