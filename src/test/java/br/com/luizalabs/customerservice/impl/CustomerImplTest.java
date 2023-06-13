@@ -2,7 +2,6 @@ package br.com.luizalabs.customerservice.impl;
 
 import br.com.luizalabs.customerservice.exeptions.BadRequestException;
 import br.com.luizalabs.customerservice.exeptions.NotFoundException;
-import br.com.luizalabs.customerservice.impl.facade.CustomerImplFacade;
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.repository.CustomerRepository;
 import br.com.luizalabs.customerservice.impl.stub.CustomerImplModelStub;
@@ -28,7 +27,7 @@ class CustomerImplTest {
     private CustomerRepository customerRepository;
 
     @Mock
-    private CustomerImplFacade customerImplFacade;
+    private FacadeImpl customerFacadeImpl;
 
     @InjectMocks
     private CustomerImpl customerImpl;
@@ -183,7 +182,7 @@ class CustomerImplTest {
         newCustomer.getFavoriteProductImplModels().add(product3);
 
         when(customerRepository.findById(customer.getId())).thenReturn(Mono.just(customer));
-        when(customerImplFacade.findProductById(product3.getId())).thenReturn(Mono.just(product3));
+        when(customerFacadeImpl.findProductById(product3.getId())).thenReturn(Mono.just(product3));
         when(customerRepository.save(newCustomer)).thenReturn(Mono.just(newCustomer));
 
         StepVerifier.create(customerImpl.addFavoriteProduct(customer.getId(), product3.getId()))
@@ -197,7 +196,7 @@ class CustomerImplTest {
         var product3 = productImplModel3Stub();
 
         when(customerRepository.findById(customer.getId())).thenReturn(Mono.just(customer));
-        when(customerImplFacade.findProductById(product3.getId())).thenReturn(Mono.empty());
+        when(customerFacadeImpl.findProductById(product3.getId())).thenReturn(Mono.empty());
 
         StepVerifier.create(customerImpl.addFavoriteProduct(customer.getId(), product3.getId()))
                 .expectError(NotFoundException.class)
@@ -216,7 +215,7 @@ class CustomerImplTest {
         productFieldsNull.setImage(null);
 
         when(customerRepository.findById(customer.getId())).thenReturn(Mono.just(customer));
-        when(customerImplFacade.findProductById(product3.getId())).thenReturn(Mono.just(productFieldsNull));
+        when(customerFacadeImpl.findProductById(product3.getId())).thenReturn(Mono.just(productFieldsNull));
 
         StepVerifier.create(customerImpl.addFavoriteProduct(customer.getId(), product3.getId()))
                 .expectError(NotFoundException.class)

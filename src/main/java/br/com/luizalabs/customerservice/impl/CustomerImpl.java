@@ -3,7 +3,6 @@ package br.com.luizalabs.customerservice.impl;
 import br.com.luizalabs.customerservice.controller.mapper.CustomerControllerMapper;
 import br.com.luizalabs.customerservice.exeptions.BadRequestException;
 import br.com.luizalabs.customerservice.exeptions.NotFoundException;
-import br.com.luizalabs.customerservice.impl.facade.CustomerImplFacade;
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductImplModel;
 import br.com.luizalabs.customerservice.impl.repository.CustomerRepository;
@@ -23,7 +22,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class CustomerImpl {
 
-    private final CustomerImplFacade customerImplFacade;
+    private final FacadeImpl customerFacadeImpl;
     private final CustomerRepository customerRepository;
 
     public Mono<CustomerImplModel> createCustomer(CustomerImplModel customerImplModel) {
@@ -70,7 +69,7 @@ public class CustomerImpl {
 
     public Flux<ProductImplModel> addFavoriteProduct(String id, String productId) {
         return findCustomerById(id)
-                .zipWith(customerImplFacade.findProductById(productId)
+                .zipWith(customerFacadeImpl.findProductById(productId)
                         .switchIfEmpty(Mono.error(
                                 new NotFoundException("Product Not Found", Map.of("product_id", productId)))))
                 .doOnSuccess(this::validProductExists)
