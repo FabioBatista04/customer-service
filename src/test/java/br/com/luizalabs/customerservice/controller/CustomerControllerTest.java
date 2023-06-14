@@ -23,9 +23,8 @@ import static br.com.luizalabs.customerservice.controller.stub.CustomerControlle
 import static br.com.luizalabs.customerservice.controller.stub.CustomerControllerRequestStub.customerControllerResponseStub;
 import static org.mockito.Mockito.when;
 import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
-
+@WebFluxTest
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = CustomerController.class)
 class CustomerControllerTest {
 
     @Autowired
@@ -43,7 +42,6 @@ class CustomerControllerTest {
     void setCustomer() {
         webClientTest = WebTestClient.bindToController(new CustomerController(facade))
                 .configureClient()
-                .filter(basicAuthentication())
                 .build();
         request = customerControllerRequestStub();
         response = customerControllerResponseStub();
