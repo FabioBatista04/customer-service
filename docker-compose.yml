@@ -13,6 +13,15 @@ services:
     volumes:
       - ./docker-entrypoint-initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
+
+  redis:
+    container_name: redis
+    image: redis
+    command: redis-server --requirepass Customer-Service-Redis
+    ports:
+      - "6379:6379"
+
+
   mongo-express:
     image: mongo-express
     container_name: mexpress
