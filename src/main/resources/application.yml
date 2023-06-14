@@ -7,6 +7,8 @@ app-config:
   jwt:
     secret: mysecretkeyforencriptjwtwithhash256afterdecryptfromdb
     expiration: 28800 #8horas
+  redis:
+    ttl: 28800 #8horas
 
 spring:
   data:
