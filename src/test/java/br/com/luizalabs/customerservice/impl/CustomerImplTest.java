@@ -1,7 +1,6 @@
 package br.com.luizalabs.customerservice.impl;
 
-import br.com.luizalabs.customerservice.exeptions.BadRequestException;
-import br.com.luizalabs.customerservice.exeptions.NotFoundException;
+import br.com.luizalabs.customerservice.exeptions.GenericException;
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.repository.CustomerRepository;
 import br.com.luizalabs.customerservice.impl.stub.CustomerImplModelStub;
@@ -55,7 +54,7 @@ class CustomerImplTest {
         when(customerRepository.findByEmail(customer.getEmail())).thenReturn(Mono.just(customer));
         when(customerRepository.save(any(CustomerImplModel.class))).thenReturn(Mono.just(customer));
 
-        StepVerifier.create(customerImpl.createCustomer(customer)).expectError(BadRequestException.class).verify();
+        StepVerifier.create(customerImpl.createCustomer(customer)).expectError(GenericException.class).verify();
     }
 
     @Test
@@ -81,7 +80,7 @@ class CustomerImplTest {
         when(customerRepository.findByEmail(customer.getEmail())).thenReturn(Mono.just(customerNew));
         when(customerRepository.findById(customer.getId())).thenReturn(Mono.just(customer));
 
-        StepVerifier.create(customerImpl.updateCustomer(customer.getId(), customer)).expectError(BadRequestException.class).verify();
+        StepVerifier.create(customerImpl.updateCustomer(customer.getId(), customer)).expectError(GenericException.class).verify();
     }
 
     @Test
@@ -91,7 +90,7 @@ class CustomerImplTest {
         when(customerRepository.findByEmail(customer.getEmail())).thenReturn(Mono.empty());
         when(customerRepository.findById(customer.getId())).thenReturn(Mono.empty());
 
-        StepVerifier.create(customerImpl.updateCustomer(customer.getId(), customer)).expectError(NotFoundException.class).verify();
+        StepVerifier.create(customerImpl.updateCustomer(customer.getId(), customer)).expectError(GenericException.class).verify();
     }
 
     @Test
@@ -109,7 +108,7 @@ class CustomerImplTest {
 
         when(customerRepository.findById(customer.getId())).thenReturn(Mono.empty());
 
-        StepVerifier.create(customerImpl.findCustomerById(customer.getId())).expectError(NotFoundException.class).verify();
+        StepVerifier.create(customerImpl.findCustomerById(customer.getId())).expectError(GenericException.class).verify();
     }
 
     @Test
@@ -199,7 +198,7 @@ class CustomerImplTest {
         when(customerFacadeImpl.findProductById(product3.getId())).thenReturn(Mono.empty());
 
         StepVerifier.create(customerImpl.addFavoriteProduct(customer.getId(), product3.getId()))
-                .expectError(NotFoundException.class)
+                .expectError(GenericException.class)
                 .verify();
     }
 
@@ -218,7 +217,7 @@ class CustomerImplTest {
         when(customerFacadeImpl.findProductById(product3.getId())).thenReturn(Mono.just(productFieldsNull));
 
         StepVerifier.create(customerImpl.addFavoriteProduct(customer.getId(), product3.getId()))
-                .expectError(NotFoundException.class)
+                .expectError(GenericException.class)
                 .verify();
     }
 
@@ -239,7 +238,7 @@ class CustomerImplTest {
         when(customerRepository.findById(customer.getId())).thenReturn(Mono.empty());
 
         StepVerifier.create(customerImpl.deleteFavoriteProduct(customer.getId(), "123"))
-                .expectError(NotFoundException.class)
+                .expectError(GenericException.class)
                 .verify();
     }
 

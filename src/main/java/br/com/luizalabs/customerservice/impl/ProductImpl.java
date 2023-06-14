@@ -1,6 +1,7 @@
 package br.com.luizalabs.customerservice.impl;
 
-import br.com.luizalabs.customerservice.exeptions.BadRequestException;
+import br.com.luizalabs.customerservice.exeptions.GenericException;
+import br.com.luizalabs.customerservice.impl.model.ErrorEnum;
 import br.com.luizalabs.customerservice.impl.model.ProductPageImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,10 @@ public class ProductImpl {
         return Mono.just(page)
                 .filter(p -> p.matches("^(?=.*\\d)[\\d0]+$") )
                 .map(Integer::parseInt)
-                .switchIfEmpty(Mono.error(new BadRequestException(
-                        "Bad Request", Map.of("page", "The value must be greater than zero."))))
+                .switchIfEmpty(Mono.error(new GenericException(
+                        ErrorEnum.BAD_REQUEST,
+                        "invalid param",
+                        Map.of("page", "The value must be greater than zero."))))
                 .flatMap(pag -> facade.findProductByPage(pag));
     }
 }
