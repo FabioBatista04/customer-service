@@ -1,9 +1,7 @@
 package br.com.luizalabs.customerservice.impl;
 
 import br.com.luizalabs.customerservice.controller.mapper.CustomerControllerMapper;
-import br.com.luizalabs.customerservice.exeptions.BadRequestException;
-import br.com.luizalabs.customerservice.exeptions.NotFoundException;
-import br.com.luizalabs.customerservice.impl.facade.CustomerImplFacade;
+import br.com.luizalabs.customerservice.exeptions.GenericException;
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductImplModel;
 import br.com.luizalabs.customerservice.impl.repository.CustomerRepository;
@@ -18,12 +16,15 @@ import reactor.util.function.Tuple2;
 import java.util.HashSet;
 import java.util.Map;
 
+import static br.com.luizalabs.customerservice.impl.model.ErrorEnum.BAD_REQUEST;
+import static br.com.luizalabs.customerservice.impl.model.ErrorEnum.NOT_FOUND;
+
 @Log4j2
 @Service
 @AllArgsConstructor
 public class CustomerImpl {
 
-    private final CustomerImplFacade customerImplFacade;
+    private final FacadeImpl customerFacadeImpl;
     private final CustomerRepository customerRepository;
 
     public Mono<CustomerImplModel> createCustomer(CustomerImplModel customerImplModel) {
@@ -47,7 +48,8 @@ public class CustomerImpl {
     public Mono<CustomerImplModel> findCustomerById(String id) {
         log.info("Finding product by ID: {}", id);
         return customerRepository.findById(id)
-                .switchIfEmpty(Mono.error(new NotFoundException("Customer Not Found", Map.of("customer_id", id))));
+                .switchIfEmpty(Mono.error(
+                        new GenericException(NOT_FOUND,"Customer Not Found", Map.of("customer_id", id))));
     }
 
     public Flux<CustomerImplModel> findAllCustomers(int page, int size) {
@@ -55,7 +57,8 @@ public class CustomerImpl {
         var pageableSize = size > 0 && size < 20 ? size : 20;
         var message = String.format("Page %d Not Found", page);
         return customerRepository.findAll(PageRequest.of(pageablePage, pageableSize))
-                .switchIfEmpty(Mono.error(new NotFoundException(message, Map.of("Page", String.valueOf(message)))));
+                .switchIfEmpty(Mono.error(
+                        new GenericException(NOT_FOUND,message, Map.of("Page", String.valueOf(message)))));
     }
 
     public Mono<Void> deleteCustomerById(String id) {
@@ -70,9 +73,9 @@ public class CustomerImpl {
 
     public Flux<ProductImplModel> addFavoriteProduct(String id, String productId) {
         return findCustomerById(id)
-                .zipWith(customerImplFacade.findProductById(productId)
-                        .switchIfEmpty(Mono.error(
-                                new NotFoundException("Product Not Found", Map.of("product_id", productId)))))
+                .zipWith(customerFacadeImpl.findProductById(productId)
+                        .switchIfEmpty(Mono.error(new GenericException(
+                                NOT_FOUND,"Product Not Found", Map.of("product_id", productId)))))
                 .doOnSuccess(this::validProductExists)
                 .doOnSuccess(this::addProduct)
                 .map(Tuple2::getT1)
@@ -91,15 +94,15 @@ public class CustomerImpl {
     }
 
     private void validEmail(CustomerImplModel customerImplModel) {
-        if (customerImplModel != null)
-            throw new BadRequestException("Email exists", Map.of("email", customerImplModel.getEmail()));
+        if (customerImplModel != null) throw new GenericException(
+                BAD_REQUEST,"Email exists", Map.of("email", customerImplModel.getEmail()));
     }
 
     private void validEmailExists(Tuple2<CustomerImplModel, CustomerImplModel> objects) {
         var customerFoundById = objects.getT2();
         var customerFoundByEmail = objects.getT1();
-        if (!customerFoundById.getId().equals(customerFoundByEmail.getId()))
-            throw new BadRequestException("Email exists", Map.of("email", customerFoundByEmail.getEmail()));
+        if (!customerFoundById.getId().equals(customerFoundByEmail.getId())) throw new GenericException(
+                BAD_REQUEST,"Email exists", Map.of("email", customerFoundByEmail.getEmail()));
     }
 
     private boolean deleteProduct(CustomerImplModel customerImplModel, String productId) {
@@ -128,7 +131,7 @@ public class CustomerImpl {
     public void validProductExists(Tuple2<CustomerImplModel, ProductImplModel> tuple2) {
         var product = tuple2.getT2();
         if (product.getId() == null)
-            throw new NotFoundException("Product Not Found", Map.of());
+            throw new GenericException(NOT_FOUND,"Product Not Found", Map.of());
     }
 
 

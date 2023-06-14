@@ -8,8 +8,10 @@ import br.com.luizalabs.customerservice.controller.model.request.UserControllerR
 import br.com.luizalabs.customerservice.controller.model.response.AuthControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.CustomerControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
+import br.com.luizalabs.customerservice.controller.model.response.ProductPageControllerResponse;
 import br.com.luizalabs.customerservice.impl.AuthImpl;
 import br.com.luizalabs.customerservice.impl.CustomerImpl;
+import br.com.luizalabs.customerservice.impl.ProductImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -20,6 +22,7 @@ import reactor.core.publisher.Mono;
 public class ControllerFacade {
 
     private final CustomerImpl customerImpl;
+    private final ProductImpl productImpl;
     private final AuthImpl authImpl;
 
 
@@ -64,5 +67,9 @@ public class ControllerFacade {
 
     public Mono<AuthControllerResponse> generateToken(UserControllerRequest request) {
         return authImpl.generateToken(AuthControllerMapper.mapperToUserImplModel(request)).map(AuthControllerResponse::new);
+    }
+
+    public Mono<ProductPageControllerResponse> findProductsByPage(String page) {
+        return productImpl.getProductsByPage(page).map(ProductControllerMapper::mapperToProductPageImpl);
     }
 }

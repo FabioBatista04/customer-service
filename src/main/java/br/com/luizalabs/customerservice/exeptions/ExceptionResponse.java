@@ -16,11 +16,11 @@ import java.util.Map;
 @AllArgsConstructor
 public class ExceptionResponse {
 
-    private OffsetDateTime timestamp;
     private int status;
     private String error;
     private String message;
     private String path;
+    private OffsetDateTime timestamp;
     @Builder.Default
     private Map<String, String> fields = new HashMap<>();
 }
