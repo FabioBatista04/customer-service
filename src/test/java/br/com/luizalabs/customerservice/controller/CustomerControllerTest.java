@@ -3,6 +3,7 @@ package br.com.luizalabs.customerservice.controller;
 import br.com.luizalabs.customerservice.controller.model.request.CustomerControllerRequest;
 import br.com.luizalabs.customerservice.controller.model.response.CustomerControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
+import br.com.luizalabs.customerservice.controller.stub.CustomerControllerRequestStub;
 import br.com.luizalabs.customerservice.controller.stub.ProductControllerStub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Set;
 
 import static br.com.luizalabs.customerservice.controller.stub.CustomerControllerRequestStub.customerControllerRequestStub;
 import static br.com.luizalabs.customerservice.controller.stub.CustomerControllerRequestStub.customerControllerResponseStub;
@@ -216,12 +218,14 @@ class CustomerControllerTest {
     @Test
     @Disabled
     void addProductToFavoritesSuccess() {
-
+        var customer = CustomerControllerRequestStub.customerControllerResponseStub();
         var product1 = ProductControllerStub.productControllerResponseStub();
         var product2 = ProductControllerStub.productControllerResponse2Stub();
         var product3 = ProductControllerStub.productControllerResponse3Stub();
 
-        when(facade.addFavoriteProduct("1", "1")).thenReturn(Flux.just(product1, product2, product3));
+        customer.setFavoriteProducts(Set.of(product1,product2,product3));
+
+        when(facade.addFavoriteProduct("1", "1")).thenReturn(Mono.just(customer));
 
         webClientTest.post().uri("/customers/1/favorites/1")
                 .exchange()

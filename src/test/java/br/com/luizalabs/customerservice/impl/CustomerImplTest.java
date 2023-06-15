@@ -3,6 +3,7 @@ package br.com.luizalabs.customerservice.impl;
 import br.com.luizalabs.customerservice.exeptions.GenericException;
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.repository.CustomerRepository;
+import br.com.luizalabs.customerservice.impl.service.CustomerImpl;
 import br.com.luizalabs.customerservice.impl.stub.CustomerImplModelStub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -185,7 +186,7 @@ class CustomerImplTest {
         when(customerRepository.save(newCustomer)).thenReturn(Mono.just(newCustomer));
 
         StepVerifier.create(customerImpl.addFavoriteProduct(customer.getId(), product3.getId()))
-                .expectNext(product,product3)
+                .expectNext(newCustomer)
                 .verifyComplete();
     }
 
