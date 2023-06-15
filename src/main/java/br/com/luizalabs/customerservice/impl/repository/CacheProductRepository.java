@@ -1,36 +1,46 @@
 package br.com.luizalabs.customerservice.impl.repository;
 
+import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductImplModel;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
 @Log4j2
-@AllArgsConstructor
+@Repository
 public class CacheProductRepository {
+    @Qualifier("redisOperationsProduct")
+    private final ReactiveRedisTemplate<String, ProductImplModel> productRedisTemplate;
 
-    private final ReactiveRedisTemplate<String, ProductImplModel> reactiveRedisTemplate;
+    public CacheProductRepository(ReactiveRedisTemplate<String,ProductImplModel> template){
+        this.productRedisTemplate = template;
+    }
+
 
     @Value("${app-config.redis.ttl}")
     private Integer ttl;
 
-    Mono<Boolean> save(String key, ProductImplModel value){
-        return reactiveRedisTemplate
+    public Mono<Boolean> save(String key, ProductImplModel value){
+        return productRedisTemplate
                 .opsForValue()
                 .set(key,value)
-                .then(reactiveRedisTemplate.expire(key, Duration.ofSeconds(ttl)))
+                .then(productRedisTemplate.expire(key, Duration.ofSeconds(ttl)))
                 .onErrorResume(throwable -> {
                     log.error("Error encountered while attempting to save data key: {}", key,throwable);
                     return Mono.just(false);
                 });
     }
 
-    Mono<ProductImplModel> get(String key, ProductImplModel value){
-        return reactiveRedisTemplate
+    public Mono<ProductImplModel> get(String key){
+        return productRedisTemplate
                 .opsForValue()
                 .get(key)
                 .onErrorResume(throwable -> {
@@ -39,8 +49,8 @@ public class CacheProductRepository {
                 });
     }
 
-    Mono<Boolean> existsForKey(String key, ProductImplModel value){
-        return reactiveRedisTemplate
+    public Mono<Boolean> existsForKey(String key){
+        return productRedisTemplate
                 .hasKey(key)
                 .onErrorResume(throwable -> {
                     log.error("Error encountered while attempting to query data key: {}", key,throwable);
