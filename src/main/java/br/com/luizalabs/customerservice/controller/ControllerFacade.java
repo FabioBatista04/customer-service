@@ -9,9 +9,9 @@ import br.com.luizalabs.customerservice.controller.model.response.AuthController
 import br.com.luizalabs.customerservice.controller.model.response.CustomerControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductPageControllerResponse;
-import br.com.luizalabs.customerservice.impl.AuthImpl;
-import br.com.luizalabs.customerservice.impl.CustomerImpl;
-import br.com.luizalabs.customerservice.impl.ProductImpl;
+import br.com.luizalabs.customerservice.impl.service.AuthImpl;
+import br.com.luizalabs.customerservice.impl.service.CustomerImpl;
+import br.com.luizalabs.customerservice.impl.service.ProductImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -48,8 +48,9 @@ public class ControllerFacade {
         return customerImpl.findFavoriteProducts(id).map(ProductControllerMapper::mapFavoriteProductsTo);
     }
 
-    public Flux<ProductControllerResponse> addFavoriteProduct(String id, String productId) {
-        return customerImpl.addFavoriteProduct(id, productId).map(ProductControllerMapper::mapFavoriteProductsTo);
+    public Mono<CustomerControllerResponse> addFavoriteProduct(String id, String productId) {
+        return customerImpl.addFavoriteProduct(id, productId)
+                .map(CustomerControllerMapper::mapToCustomerControllerResponse);
     }
 
     public Mono<Void> deleteCustomer(String id) {

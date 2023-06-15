@@ -65,7 +65,7 @@ public class CustomerController {
 
     @PostMapping("/{id}/favorites/{product_id}")
     @ResponseStatus(CREATED)
-    public Flux<ProductControllerResponse> addProductToFavorites(@PathVariable String id,
+    public Mono<CustomerControllerResponse> addProductToFavorites(@PathVariable String id,
                                                                  @PathVariable String product_id
     ) {
         return controllerFacade.addFavoriteProduct(id, product_id);
