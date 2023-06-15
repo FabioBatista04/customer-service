@@ -1,4 +1,4 @@
-package br.com.luizalabs.customerservice.impl;
+package br.com.luizalabs.customerservice.impl.service;
 
 import br.com.luizalabs.customerservice.authentication.JWTUtil;
 import br.com.luizalabs.customerservice.exeptions.GenericException;
@@ -27,11 +27,11 @@ public class AuthImpl {
     private final PasswordEncoder encoder = new BCryptPasswordEncoder();
     private final JWTUtil jwtUtil;
 
-    public Mono<String> createUser(UserImplModel userImplaModel) {
+    public Mono<String> createUser(UserImplModel userImplModel) {
         var user = UserImplModel.builder()
-                .username(userImplaModel.getUsername())
-                .password(encoder.encode(userImplaModel.getPassword()))
-                .roleUsers(validRolesUser(userImplaModel.getRoleUsers())).build();
+                .username(userImplModel.getUsername())
+                .password(encoder.encode(userImplModel.getPassword()))
+                .roleUsers(validRolesUser(userImplModel.getRoleUsers())).build();
 
         return userRepository.findByUsername(user.getUsername())
                 .doOnSuccess(this::usernameFoundError)
@@ -39,8 +39,8 @@ public class AuthImpl {
                 .map(jwtUtil::generateToken);
     }
 
-    private void usernameFoundError(UserImplModel userImplaModel) {
-        if (userImplaModel != null) throw new GenericException(
+    private void usernameFoundError(UserImplModel userImplModel) {
+        if (userImplModel != null) throw new GenericException(
                 BAD_REQUEST,"username exists", Map.of("username", "Please provide another username."));
     }
     public Mono<String> generateToken(UserImplModel userImplModel) {
