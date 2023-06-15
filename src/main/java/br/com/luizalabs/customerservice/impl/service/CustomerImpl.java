@@ -2,7 +2,6 @@ package br.com.luizalabs.customerservice.impl.service;
 
 import br.com.luizalabs.customerservice.controller.mapper.CustomerControllerMapper;
 import br.com.luizalabs.customerservice.exeptions.GenericException;
-import br.com.luizalabs.customerservice.impl.FacadeImpl;
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductImplModel;
 import br.com.luizalabs.customerservice.impl.repository.CustomerRepository;
@@ -34,94 +33,100 @@ public class CustomerImpl {
         return customerRepository.findByEmail(customerImplModel.getEmail())
                 .doOnSuccess(this::validEmail)
                 .switchIfEmpty(customerRepository.save(customerImplModel))
-                .flatMap(customer -> cacheCustomerImpl.save(customer.getId(),customer).map(success -> customer));
+                .flatMap(this::saveCustomerInCache);
     }
 
-    public Mono<CustomerImplModel> updateCustomer(String id, CustomerImplModel customerImplModel) {
+    public Mono<CustomerImplModel> updateCustomer(String customerId, CustomerImplModel customerImplModel) {
 
         return customerRepository.findByEmail(customerImplModel.getEmail())
-                .switchIfEmpty(findCustomerById(id)
-                        .map(old -> CustomerControllerMapper.mapperToCustomerUpdated(old, customerImplModel))
-                        .flatMap(customerRepository::save))
-                .zipWith(findCustomerById(id))
+                .switchIfEmpty(processCustomerUpdate(customerId, customerImplModel))
+                .zipWith(findCustomerById(customerId))
                 .doOnSuccess(this::validEmailExists)
-                .map(Tuple2::getT1)
-                .map(customerDataBase -> CustomerControllerMapper.mapperToCustomerUpdated(customerDataBase, customerImplModel))
-                .flatMap(customerRepository::save)
-                .flatMap(customer -> cacheCustomerImpl.save(customer.getId(),customer).map(success -> customer));
+                .flatMap(this::updateAndSaveCustomer)
+                .flatMap(this::saveCustomerInCache);
     }
 
-    public Mono<CustomerImplModel> findCustomerById(String id) {
-        log.info("Finding product by ID: {}", id);
-        return cacheCustomerImpl.existsKey(id)
-                        .flatMap(hasCache -> {
-                            if (hasCache) return cacheCustomerImpl.get(id);
-                            return customerRepository.findById(id)
-                                    .flatMap(customer -> cacheCustomerImpl
-                                            .save(customer.getId(),customer).map(success -> customer));
-                        })
+    public Mono<CustomerImplModel> findCustomerById(String customerId) {
+        log.info("Finding product by ID: {}", customerId);
+        return cacheCustomerImpl.existsKey(customerId)
+                .flatMap(hasCache -> getByCacheOrRepository(hasCache, customerId))
                 .switchIfEmpty(Mono.error(
-                        new GenericException(NOT_FOUND,"Customer Not Found", Map.of("customer_id", id))));
+                        new GenericException(NOT_FOUND, "Customer Not Found", Map.of("customer_id", customerId))));
     }
+
 
     public Flux<CustomerImplModel> findAllCustomers(int page, int size) {
-        var pageablePage = Math.max(page, 1) - 1;
-        var pageableSize = size > 0 && size < 20 ? size : 20;
-        var message = String.format("Page %d Not Found", page);
-        return customerRepository.findAll(PageRequest.of(pageablePage, pageableSize))
+        var pageable = createPageable(page, size);
+        return customerRepository.findAll(pageable)
                 .switchIfEmpty(Mono.error(
-                        new GenericException(NOT_FOUND,message, Map.of("Page", String.valueOf(message)))));
+                        new GenericException(
+                                NOT_FOUND, "Page " + page + " Not Found", Map.of("Page", String.valueOf(page)))));
     }
 
     public Mono<Void> deleteCustomerById(String id) {
         log.info("Deleting client with ID: {}", id);
-        return customerRepository.deleteById(id);
+        return customerRepository.deleteById(id)
+                .then(cacheCustomerImpl.removeAndEmpty(id));
     }
 
-    public Flux<ProductImplModel> findFavoriteProducts(String id) {
-        return findCustomerById(id)
+    public Flux<ProductImplModel> findFavoriteProducts(String customerId) {
+        return findCustomerById(customerId)
                 .flatMapIterable(CustomerImplModel::getFavoriteProductImplModels);
     }
 
-    public Mono<CustomerImplModel> addFavoriteProduct(String id, String productId) {
-        return Mono.zip(findCustomerById(id), productImpl.findProductById(productId))
+    public Mono<CustomerImplModel> addFavoriteProduct(String customerId, String productId) {
+        return findCustomerAndProduct(customerId, productId)
                 .doOnSuccess(this::addProductToCustomer)
-                .map(Tuple2::getT1)
-                .flatMap(customerRepository::save)
-                .flatMap(customer -> cacheCustomerImpl.save(customer.getId(),customer).map(success -> customer));
+                .flatMap(this::saveCustomer)
+                .flatMap(this::saveCustomerInCache);
     }
 
-    public Mono<Void> deleteFavoriteProduct(String id, String productId) {
+    public Mono<Void> deleteFavoriteProduct(String customerId, String productId) {
+        return findCustomerById(customerId)
+                .doOnSuccess(customerFound -> deleteProductFromCustomer(customerFound, productId))
+                .flatMap(customerRepository::save)
+                .map(this::saveCustomerInCache)
+                .then();
+    }
+
+
+    private Mono<CustomerImplModel> updateAndSaveCustomer(Tuple2<CustomerImplModel, CustomerImplModel> tuple) {
+        var customerDataBase = tuple.getT1();
+        var updatedCustomer = CustomerControllerMapper.mapperToCustomerUpdated(customerDataBase, tuple.getT2());
+        return customerRepository.save(updatedCustomer);
+    }
+
+    private Mono<CustomerImplModel> processCustomerUpdate(String id, CustomerImplModel customerImplModel) {
         return findCustomerById(id)
-                .flatMap(customer -> {
-                    if (deleteProductFromCustomer(customer, productId)) {
-                        return customerRepository.save(customer).then();
-                    }
-                    return Mono.empty();
-                });
+                .map(old -> CustomerControllerMapper.mapperToCustomerUpdated(old, customerImplModel))
+                .flatMap(customerRepository::save)
+                .flatMap(this::saveCustomerInCache);
+    }
+
+    private Mono<Tuple2<CustomerImplModel, ProductImplModel>> findCustomerAndProduct(String customerId, String productId) {
+        var customer = findCustomerById(customerId);
+        var product = productImpl.findProductById(productId);
+        return Mono.zip(customer, product);
     }
 
     private void validEmail(CustomerImplModel customerImplModel) {
         if (customerImplModel != null) throw new GenericException(
-                BAD_REQUEST,"Email exists", Map.of("email", customerImplModel.getEmail()));
+                BAD_REQUEST, "Email exists", Map.of("email", customerImplModel.getEmail()));
     }
 
     private void validEmailExists(Tuple2<CustomerImplModel, CustomerImplModel> objects) {
         var customerFoundById = objects.getT2();
         var customerFoundByEmail = objects.getT1();
         if (!customerFoundById.getId().equals(customerFoundByEmail.getId())) throw new GenericException(
-                BAD_REQUEST,"Email exists", Map.of("email", customerFoundByEmail.getEmail()));
+                BAD_REQUEST, "Email exists", Map.of("email", customerFoundByEmail.getEmail()));
     }
 
-    private boolean deleteProductFromCustomer(CustomerImplModel customerImplModel, String productId) {
+    private void deleteProductFromCustomer(CustomerImplModel customerImplModel, String productId) {
         var product = ProductImplModel.builder().id(productId).build();
         var products = customerImplModel.getFavoriteProductImplModels();
         if (products != null && !products.isEmpty()) {
-            if (products.contains(product)) {
-                return products.remove(product);
-            }
+            products.remove(product);
         }
-        return false;
     }
 
     private void addProductToCustomer(Tuple2<CustomerImplModel, ProductImplModel> tuple2) {
@@ -134,6 +139,28 @@ public class CustomerImpl {
             customer.getFavoriteProductImplModels().add(newProduct);
         }
 
+    }
+
+    private Mono<CustomerImplModel> saveCustomer(Tuple2<CustomerImplModel, ProductImplModel> tuple) {
+        var customer = tuple.getT1();
+        return customerRepository.save(customer);
+    }
+
+    private Mono<CustomerImplModel> saveCustomerInCache(CustomerImplModel customer) {
+        return cacheCustomerImpl.saveAndReturn(customer.getId(), customer);
+    }
+
+    private Mono<CustomerImplModel> getByCacheOrRepository(Boolean hasCache, String customerId) {
+        if (hasCache) return cacheCustomerImpl.get(customerId);
+        return customerRepository.findById(customerId)
+                .flatMap(customer -> cacheCustomerImpl
+                        .saveAndReturn(customer.getId(), customer));
+    }
+
+    private PageRequest createPageable(int page, int size) {
+        var pageablePage = Math.max(page, 1) - 1;
+        var pageableSize = size > 0 && size < 20 ? size : 20;
+        return PageRequest.of(pageablePage, pageableSize);
     }
 
 }

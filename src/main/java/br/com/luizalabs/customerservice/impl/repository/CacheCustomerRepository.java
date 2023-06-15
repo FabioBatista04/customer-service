@@ -16,7 +16,7 @@ public class CacheCustomerRepository {
     @Qualifier("redisOperationsCustomer")
     private final ReactiveRedisTemplate<String, CustomerImplModel> customerRedisTemplate;
 
-    public CacheCustomerRepository(ReactiveRedisTemplate<String,CustomerImplModel> template){
+    public CacheCustomerRepository(ReactiveRedisTemplate<String, CustomerImplModel> template) {
         this.customerRedisTemplate = template;
     }
 
@@ -24,33 +24,42 @@ public class CacheCustomerRepository {
     @Value("${app-config.redis.ttl}")
     private Integer ttl;
 
-    public Mono<Boolean> save(String key, CustomerImplModel value){
+    public Mono<Boolean> save(String key, CustomerImplModel value) {
         return customerRedisTemplate
                 .opsForValue()
-                .set(key,value)
+                .set(key, value)
                 .then(customerRedisTemplate.expire(key, Duration.ofSeconds(ttl)))
                 .onErrorResume(throwable -> {
-                    log.error("Error encountered while attempting to save data key: {}", key,throwable);
+                    log.error("Error encountered while attempting to save data key: {}", key, throwable);
                     return Mono.just(false);
                 });
     }
 
-    public Mono<CustomerImplModel> get(String key){
+    public Mono<CustomerImplModel> get(String key) {
         return customerRedisTemplate
                 .opsForValue()
                 .get(key)
                 .onErrorResume(throwable -> {
-                    log.error("Error encountered while attempting to retrieve data Key: {}", key,throwable);
+                    log.error("Error encountered while attempting to retrieve data Key: {}", key, throwable);
                     return Mono.empty();
                 });
     }
 
-    public Mono<Boolean> existsForKey(String key){
+    public Mono<Boolean> existsForKey(String key) {
         return customerRedisTemplate
                 .hasKey(key)
                 .onErrorResume(throwable -> {
-                    log.error("Error encountered while attempting to query data key: {}", key,throwable);
+                    log.error("Error encountered while attempting to query data key: {}", key, throwable);
                     return Mono.just(false);
+                });
+    }
+
+    public Mono<Boolean> remove(String key) {
+        return customerRedisTemplate.opsForValue()
+                .delete(key)
+                .onErrorResume(throwable -> {
+                    log.error("Error encountered while delete Customer Key: {}", key, throwable);
+                    return Mono.empty();
                 });
     }
 

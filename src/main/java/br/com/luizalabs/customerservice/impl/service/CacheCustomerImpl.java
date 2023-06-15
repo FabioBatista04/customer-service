@@ -30,4 +30,22 @@ public class CacheCustomerImpl {
             return isSave;
         });
     }
+    public Mono<CustomerImplModel> saveAndReturn(String key, CustomerImplModel customerImplModel) {
+        return save(key, customerImplModel)
+                .filter(isSaved -> isSaved)
+                .map(isSaved -> customerImplModel);
+    }
+
+    public Mono<Boolean> remove(String key){
+        return cacheCustomerImpl.remove(key)
+                .map(isRemoved -> {
+                    if(!isRemoved)
+                        log.error("Error encountered while remove in Redis customer with ID: {} ", key);
+                    return isRemoved;
+                });
+    }
+    public Mono<Void> removeAndEmpty(String key){
+        return remove(key)
+                .flatMap(isRemoved -> Mono.empty());
+    }
 }
