@@ -24,7 +24,6 @@ import java.util.Set;
 import static br.com.luizalabs.customerservice.controller.stub.CustomerControllerRequestStub.customerControllerRequestStub;
 import static br.com.luizalabs.customerservice.controller.stub.CustomerControllerRequestStub.customerControllerResponseStub;
 import static org.mockito.Mockito.when;
-import static org.springframework.web.reactive.function.client.ExchangeFilterFunctions.basicAuthentication;
 @WebFluxTest
 @ExtendWith(SpringExtension.class)
 class CustomerControllerTest {
@@ -65,7 +64,6 @@ class CustomerControllerTest {
                 .isCreated()
                 .expectBody(CustomerControllerResponse.class)
                 .isEqualTo(response);
-        ;
     }
 
     @Test
@@ -175,7 +173,6 @@ class CustomerControllerTest {
                 .isOk()
                 .expectBodyList(CustomerControllerResponse.class)
                 .isEqualTo(List.of(response));
-        ;
     }
 
     @Test
@@ -190,7 +187,6 @@ class CustomerControllerTest {
                 .isOk()
                 .expectBodyList(CustomerControllerResponse.class)
                 .isEqualTo(List.of(response));
-        ;
     }
 
     @Test
