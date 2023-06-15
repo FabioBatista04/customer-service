@@ -28,10 +28,10 @@ public class JWTUtil {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String generateToken(UserImplModel userImplaModel) {
+    public String generateToken(UserImplModel userImplModel) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", userImplaModel.getRoleUsers());
-        return doGenerateToken(claims, userImplaModel.getUsername());
+        claims.put("role", userImplModel.getRoleUsers());
+        return doGenerateToken(claims, userImplModel.getUsername());
     }
 
     private String doGenerateToken(Map<String, Object> claims, String username) {
