@@ -1,5 +1,6 @@
 package br.com.luizalabs.customerservice.impl.service;
 
+import br.com.luizalabs.customerservice.controller.model.response.CustomerControllerResponse;
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.repository.CacheCustomerRepository;
 import lombok.AllArgsConstructor;
@@ -32,8 +33,14 @@ public class CacheCustomerImpl {
     }
     public Mono<CustomerImplModel> saveAndReturn(String key, CustomerImplModel customerImplModel) {
         return save(key, customerImplModel)
-                .filter(isSaved -> isSaved)
-                .map(isSaved -> customerImplModel);
+                .map(isCached -> {
+                    if( isCached ) {
+                        log.info("Saved cache to Customer ID {}", key);
+                        return customerImplModel;
+                    }
+                    log.error("Erro save cache customer ID {}", key);
+                    return customerImplModel;
+                });
     }
 
     public Mono<Boolean> remove(String key){
@@ -47,5 +54,11 @@ public class CacheCustomerImpl {
     public Mono<Void> removeAndEmpty(String key){
         return remove(key)
                 .flatMap(isRemoved -> Mono.empty());
+    }
+
+    public Mono<CustomerImplModel> returnCustomerIfExists(String key) {
+        return existsKey(key)
+                .filter(exists -> exists)
+                .flatMap(contains -> get(key));
     }
 }

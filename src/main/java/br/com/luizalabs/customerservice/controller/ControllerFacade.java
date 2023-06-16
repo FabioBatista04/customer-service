@@ -10,6 +10,7 @@ import br.com.luizalabs.customerservice.controller.model.response.CustomerContro
 import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductPageControllerResponse;
 import br.com.luizalabs.customerservice.impl.service.AuthImpl;
+import br.com.luizalabs.customerservice.impl.service.CacheCustomerImpl;
 import br.com.luizalabs.customerservice.impl.service.CustomerImpl;
 import br.com.luizalabs.customerservice.impl.service.ProductImpl;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
 public class ControllerFacade {
 
     private final CustomerImpl customerImpl;
+    private final CacheCustomerImpl cacheCustomer;
     private final ProductImpl productImpl;
     private final AuthImpl authImpl;
 
@@ -37,7 +39,9 @@ public class ControllerFacade {
     }
 
     public Mono<CustomerControllerResponse> findCustomerById(String id) {
-        return customerImpl.findCustomerById(id).map(CustomerControllerMapper::mapToCustomerControllerResponse);
+        return cacheCustomer.returnCustomerIfExists(id)
+                .switchIfEmpty(customerImpl.findCustomerById(id))
+                .map(CustomerControllerMapper::mapToCustomerControllerResponse);
     }
 
     public Flux<CustomerControllerResponse> findAllCustomers(int page, int size) {
