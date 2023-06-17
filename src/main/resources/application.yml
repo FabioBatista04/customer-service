@@ -1,3 +1,42 @@
+spring:
+  profiles:
+    active: local
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/customer_service?authSource=admin
+    redis:
+      host: localhost
+      port: 6379
+      password: Customer-Service-Redis
+
+server:
+  port: 8080
+app-config:
+  url:
+    api: "http://challenge-api.luizalabs.com/api/"
+  jwt:
+    secret: mysecretkeyforencriptjwtwithhash256afterdecryptfromdb
+    expiration: 28800 #8horas
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  data:
+    mongodb:
+      uri: mongodb://root:root@mongodb:27017/customer_service?authSource=admin
+    redis:
+      host: redis
+      port: 6379
+      password: Customer-Service-Redis
+
 server:
   port: 8080
 
@@ -7,11 +46,9 @@ app-config:
   jwt:
     secret: mysecretkeyforencriptjwtwithhash256afterdecryptfromdb
     expiration: 28800 #8horas
+  redis:
+    ttl: 28800 #8horas
 
-spring:
-  data:
-    mongodb:
-      uri: mongodb://root:root@localhost:27017/customer_service?authSource=admin
 
 
 
