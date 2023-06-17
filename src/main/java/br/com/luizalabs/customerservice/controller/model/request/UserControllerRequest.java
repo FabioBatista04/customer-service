@@ -3,11 +3,17 @@ package br.com.luizalabs.customerservice.controller.model.request;
 import br.com.luizalabs.customerservice.impl.model.RoleUser;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserControllerRequest {
 
     @NotBlank(message = "User name cannot be blank")
