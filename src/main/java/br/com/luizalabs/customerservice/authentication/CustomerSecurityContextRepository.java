@@ -1,6 +1,7 @@
 package br.com.luizalabs.customerservice.authentication;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+@Log4j2
 @Component
 @AllArgsConstructor
 public class CustomerSecurityContextRepository implements ServerSecurityContextRepository {
@@ -24,11 +26,11 @@ public class CustomerSecurityContextRepository implements ServerSecurityContextR
 
     public Mono<SecurityContext> load(ServerWebExchange swe) {
         return Mono.justOrEmpty(swe.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
-            .filter(authHeader -> authHeader.startsWith("Bearer "))
-            .flatMap(authHeader -> {
-                String authToken = authHeader.substring(7);
-                Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
-                return customerAuthenticationManager.authenticate(auth).map(SecurityContextImpl::new);
-            });
+                .filter(authHeader -> authHeader.startsWith("Bearer "))
+                .flatMap(authHeader -> {
+                    String authToken = authHeader.substring(7);
+                    Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
+                    return customerAuthenticationManager.authenticate(auth).map(SecurityContextImpl::new);
+                });
     }
 }
