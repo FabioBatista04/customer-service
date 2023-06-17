@@ -1,10 +1,12 @@
 package br.com.luizalabs.customerservice.controller.mapper;
 
 
+import br.com.luizalabs.customerservice.controller.model.response.FavoriteProductsControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.MetaControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductPageControllerResponse;
 import br.com.luizalabs.customerservice.impl.mapper.ProductImplMapper;
+import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.model.MetaImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductPageImpl;
@@ -69,4 +71,11 @@ public class ProductControllerMapper {
     }
 
 
+    public static FavoriteProductsControllerResponse mapperToFavoriteProducts(CustomerImplModel customerImplModel) {
+        return Optional.ofNullable(customerImplModel)
+                .map(product -> FavoriteProductsControllerResponse.builder()
+                        .products(mapperToSetFavoriteProducts(product.getFavoriteProductImplModels()))
+                        .build())
+                .orElse(null);
+    }
 }

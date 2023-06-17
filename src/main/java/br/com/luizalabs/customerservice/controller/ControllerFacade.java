@@ -5,10 +5,7 @@ import br.com.luizalabs.customerservice.controller.mapper.CustomerControllerMapp
 import br.com.luizalabs.customerservice.controller.mapper.ProductControllerMapper;
 import br.com.luizalabs.customerservice.controller.model.request.CustomerControllerRequest;
 import br.com.luizalabs.customerservice.controller.model.request.UserControllerRequest;
-import br.com.luizalabs.customerservice.controller.model.response.AuthControllerResponse;
-import br.com.luizalabs.customerservice.controller.model.response.CustomerControllerResponse;
-import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
-import br.com.luizalabs.customerservice.controller.model.response.ProductPageControllerResponse;
+import br.com.luizalabs.customerservice.controller.model.response.*;
 import br.com.luizalabs.customerservice.impl.service.AuthImpl;
 import br.com.luizalabs.customerservice.impl.service.CacheCustomerImpl;
 import br.com.luizalabs.customerservice.impl.service.CustomerImpl;
@@ -48,8 +45,10 @@ public class ControllerFacade {
         return customerImpl.findAllCustomers(page, size).map(CustomerControllerMapper::mapToCustomerControllerResponse);
     }
 
-    public Flux<ProductControllerResponse> findFavoriteProducts(String id) {
-        return customerImpl.findFavoriteProducts(id).map(ProductControllerMapper::mapFavoriteProductsTo);
+    public Mono<FavoriteProductsControllerResponse> findFavoriteProducts(String id) {
+        return cacheCustomer.returnCustomerIfExists(id)
+                .switchIfEmpty(customerImpl.findCustomerById(id))
+                .map(ProductControllerMapper::mapperToFavoriteProducts);
     }
 
     public Mono<CustomerControllerResponse> addFavoriteProduct(String id, String productId) {

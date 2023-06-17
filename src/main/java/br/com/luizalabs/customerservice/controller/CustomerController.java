@@ -2,6 +2,7 @@ package br.com.luizalabs.customerservice.controller;
 
 import br.com.luizalabs.customerservice.controller.model.request.CustomerControllerRequest;
 import br.com.luizalabs.customerservice.controller.model.response.CustomerControllerResponse;
+import br.com.luizalabs.customerservice.controller.model.response.FavoriteProductsControllerResponse;
 import br.com.luizalabs.customerservice.controller.model.response.ProductControllerResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class CustomerController {
 
     @GetMapping("/{id}/favorites")
     @ResponseStatus(OK)
-    public Flux<ProductControllerResponse> findFavoriteProducts(@PathVariable String id) {
+    public Mono<FavoriteProductsControllerResponse> findFavoriteProducts(@PathVariable String id) {
         return controllerFacade.findFavoriteProducts(id);
     }
 
