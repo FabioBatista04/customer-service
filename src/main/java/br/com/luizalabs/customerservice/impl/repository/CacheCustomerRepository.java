@@ -4,7 +4,7 @@ import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
@@ -14,9 +14,9 @@ import java.time.Duration;
 @Repository
 public class CacheCustomerRepository {
     @Qualifier("redisOperationsCustomer")
-    private final ReactiveRedisTemplate<String, CustomerImplModel> customerRedisTemplate;
+    private final ReactiveRedisOperations<String, CustomerImplModel> customerRedisTemplate;
 
-    public CacheCustomerRepository(ReactiveRedisTemplate<String, CustomerImplModel> template) {
+    public CacheCustomerRepository(ReactiveRedisOperations<String, CustomerImplModel> template) {
         this.customerRedisTemplate = template;
     }
 
