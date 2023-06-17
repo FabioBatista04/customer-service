@@ -17,13 +17,14 @@ spring:
 
 server:
   port: 8080
-
 app-config:
   url:
     api: "http://challenge-api.luizalabs.com/api/"
   jwt:
     secret: mysecretkeyforencriptjwtwithhash256afterdecryptfromdb
     expiration: 28800 #8horas
+  redis:
+    ttl: 28800 #8horas
 
 ---
 spring:
