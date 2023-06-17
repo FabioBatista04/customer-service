@@ -1,23 +1,20 @@
 package br.com.luizalabs.customerservice.config;
+
 import br.com.luizalabs.customerservice.impl.model.CustomerImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductImplModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisConfiguration;
-import org.springframework.data.redis.core.ReactiveRedisOperations;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@Import(RedisConfiguration.class)
 public class CacheTemplateConfiguration {
 
     @Bean
-    public ReactiveRedisOperations<String, ProductImplModel> redisOperationsProduct(
+    public ReactiveRedisTemplate<String, ProductImplModel> redisOperationsProduct(
             ReactiveRedisConnectionFactory factory
     ) {
         Jackson2JsonRedisSerializer<ProductImplModel> serializer =
@@ -32,7 +29,7 @@ public class CacheTemplateConfiguration {
     }
 
     @Bean
-    public ReactiveRedisOperations<String, CustomerImplModel> redisOperationsCustomer(
+    public ReactiveRedisTemplate<String, CustomerImplModel> redisOperationsCustomer(
             ReactiveRedisConnectionFactory factory
     ) {
         Jackson2JsonRedisSerializer<CustomerImplModel> serializer =
