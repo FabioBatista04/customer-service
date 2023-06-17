@@ -152,6 +152,7 @@ public class CustomerImpl {
 
     private Mono<CustomerImplModel> getByCacheOrRepository(Boolean hasCache, String customerId) {
         if (hasCache) return cacheCustomerImpl.get(customerId);
+        log.info("Customer not found in cache, searching in database");
         return customerRepository.findById(customerId)
                 .flatMap(customer -> cacheCustomerImpl
                         .saveAndReturn(customer.getId(), customer));

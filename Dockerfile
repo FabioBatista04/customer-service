@@ -5,6 +5,9 @@ WORKDIR /app
 
 COPY build/libs/customer-service-1.0.jar customer-service.jar
 
+ENV SPRING_PROFILES_ACTIVE=docker
+
 EXPOSE 8080
+
 
 CMD ["java", "-jar", "customer-service.jar"]
