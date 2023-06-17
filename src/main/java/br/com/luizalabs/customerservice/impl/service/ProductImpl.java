@@ -7,6 +7,7 @@ import br.com.luizalabs.customerservice.impl.model.ErrorEnum;
 import br.com.luizalabs.customerservice.impl.model.ProductImplModel;
 import br.com.luizalabs.customerservice.impl.model.ProductPageImpl;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -14,7 +15,7 @@ import reactor.util.function.Tuple2;
 import java.util.Map;
 
 import static br.com.luizalabs.customerservice.impl.model.ErrorEnum.NOT_FOUND;
-
+@Log4j2
 @Service
 @AllArgsConstructor
 public class ProductImpl {
@@ -25,9 +26,12 @@ public class ProductImpl {
 
     public Mono<ProductImplModel> findProductById(String id){
         return cacheProductImpl.existsKey(id)
-                .flatMap(hasCache -> { if( hasCache )   return cacheProductImpl.get(id);
+                .flatMap(hasCache -> {
+                    log.info("Finding product by ID: {}, hasCached: {}", id, hasCache);
+                    if( hasCache )   return cacheProductImpl.get(id);
                     return facade.findProductById(id)
                             .doOnSuccess(this::validProductExists)
+                            .flatMap(cacheProductImpl::saveAndReturn)
                             .switchIfEmpty(Mono.error(new GenericException(
                                     NOT_FOUND,"Product Not Found", Map.of("product_id", id))));
                 });
