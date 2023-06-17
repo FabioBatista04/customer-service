@@ -15,6 +15,7 @@ public class CacheProductImpl {
 
 
     public Mono<Boolean> existsKey(String key){
+        log.info("Verifying if exists key: {}", key);
         return cacheProductRepository.existsForKey(key);
     }
 
@@ -30,4 +31,13 @@ public class CacheProductImpl {
         });
     }
 
+    public Mono<ProductImplModel> saveAndReturn(ProductImplModel productImplModel) {
+        return save(productImplModel.getId(), productImplModel)
+                .map(isSave -> {
+                    if(!isSave)
+                        log.error("Error encountered while saving in Redis product with ID: {} ", productImplModel.getId());
+                    return productImplModel;
+                })
+                .map(product -> productImplModel);
+    }
 }
