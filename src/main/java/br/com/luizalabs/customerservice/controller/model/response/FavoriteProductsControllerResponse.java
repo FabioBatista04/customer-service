@@ -10,6 +10,8 @@ import java.util.Set;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FavoriteProductsControllerResponse {
     private Set<ProductControllerResponse> products;

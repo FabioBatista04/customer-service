@@ -25,15 +25,12 @@ import static org.springframework.http.HttpStatus.*;
 public class GlobalExceptionHandler {
 
     @ResponseBody
-    @ExceptionHandler({GenericException.class, Exception.class})
-    public ResponseEntity<ExceptionResponse> handleException(Exception ex, ServerHttpRequest request) {
+    @ExceptionHandler(GenericException.class)
+    public ResponseEntity<ExceptionResponse> handleException(GenericException ex, ServerHttpRequest request) {
 
-        if( ex instanceof GenericException gEx)
-            return ResponseEntity.status(gEx.getErrorEnum().getStatus()).body( buildException(
-                    gEx.getErrorEnum(), gEx.getMessage(), gEx.getFields(), request.getPath().value()));
+            return ResponseEntity.status(ex.getErrorEnum().getStatus()).body(buildException(
+                    ex.getErrorEnum(), ex.getMessage(), ex.getFields(), request.getPath().value()));
 
-        return ResponseEntity.status(500).body(
-                buildException(INTERNAL_SERVER, ex.getCause().getMessage(),null,request.getPath().value()));
     }
     private ExceptionResponse buildException (ErrorEnum error, String message, Map<String,String> fields, String path
     ){
